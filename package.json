@@ -1,0 +1,14 @@
+{
+  "name": "nomad",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Nomad voice AI email agent",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "lint": "echo \"TODO: add lint scripts\"",
+    "test": "echo \"TODO: add workspace tests\""
+  }
+}
