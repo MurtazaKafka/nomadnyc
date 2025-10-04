@@ -1,11 +1,13 @@
 # Nomad Voice Email Agent
 
 docs/                   # Architecture, MVP scope, research notes
+  integrations/         # API-specific integration plans (e.g., phenoml)
 Hands-free inbox triage for busy operators, starting with a focused MVP suitable for the NYC AI Agent Hackathon.
 
 - 📄 MVP definition: see [`docs/mvp.md`](./docs/mvp.md)
 - 🛠️ Current focus: backend agent service for email ingestion, prioritization, and summarization with voice-triggered intents.
-- 🗺️ Roadmap: build iteratively—first summaries, then intent execution, finally autonomous send.
+- � phenoml-backed priority scoring with heuristic fallback and metadata tracing.
+- �🗺️ Roadmap: build iteratively—first summaries, then intent execution, finally autonomous send.
 
 ## Repository Layout
 
@@ -31,7 +33,7 @@ npm install
 npm run dev --workspace agent-service
 ```
 
-Environment variables live in `.env` at the repository root. See [`apps/agent-service/.env.example`](./apps/agent-service/.env.example) for required values.
+Environment variables live in `.env` at the repository root. See [`apps/agent-service/.env.example`](./apps/agent-service/.env.example) for required values (`OPENAI_API_KEY`, `PHENOML_API_KEY`, model name, and timeout budget).
 
 ## Running the Sample Pipeline
 

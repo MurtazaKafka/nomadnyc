@@ -12,12 +12,16 @@ pnpm --filter agent-service build # emit dist output
 pnpm --filter agent-service test  # execute Vitest suite
 ```
 
+> Summaries automatically fall back to the heuristic formatter if the OpenAI Realtime API throttles or errors.
+
 ## Environment Variables
 
 | Variable | Description |
 | --- | --- |
 | `OPENAI_API_KEY` | Optional — enables GPT-4o mini summaries. Fallback heuristic used otherwise. |
-| `PHENOML_API_KEY` | Reserved for phenoml classifier integration (stubbed in MVP). |
+| `PHENOML_API_KEY` | Enables remote urgency classification via phenoml (falls back to heuristics when unset). |
+| `PHENOML_MODEL` | Model identifier to request from phenoml (default `nomad-email-priority`). |
+| `PHENOML_TIMEOUT_MS` | Timeout budget for phenoml HTTP calls (default `1500`). |
 | `AIRIA_API_KEY` | Reserved for Airia context enrichment (stubbed in MVP). |
 
 ## Data Flow
@@ -30,7 +34,7 @@ pnpm --filter agent-service test  # execute Vitest suite
 
 ## Next Steps
 
-- Replace heuristic classifier with phenoml API call + retraining loop.
+- Log phenoml latency and accuracy metrics to Datadog MCP + ClickHouse.
 - Swap context stubs for real Airia SDK calls.
 - Persist outputs to Supabase for downstream mobile client consumption.
-- Add Datadog MCP instrumentation and ClickHouse analytics export.
+- Connect voice interface commands once mobile client is ready.

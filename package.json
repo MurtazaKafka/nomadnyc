@@ -9,6 +9,10 @@
   ],
   "scripts": {
     "lint": "echo \"TODO: add lint scripts\"",
-    "test": "echo \"TODO: add workspace tests\""
+    "test": "echo \"TODO: add workspace tests\"",
+    "mobile:dev": "pnpm --filter mobile start",
+    "mobile:ios": "pnpm --filter mobile run ios",
+    "mobile:android": "pnpm --filter mobile run android",
+    "mobile:web": "pnpm --filter mobile run web"
   }
 }
