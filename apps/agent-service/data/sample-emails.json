@@ -1,0 +1,23 @@
+[
+  {
+    "id": "email_001",
+    "from": "jane@vip-client.com",
+    "subject": "URGENT: Contract redline needed by EOD",
+    "receivedAt": "2025-10-04T13:15:00.000Z",
+    "bodyText": "Hi team, the investor counsel sent over the latest contract draft and needs feedback by end of day. Can you review clause 4.2 and confirm we're aligned on the revenue share adjustments?"
+  },
+  {
+    "id": "email_002",
+    "from": "newsletter@industryinsights.com",
+    "subject": "Weekly AI market digest",
+    "receivedAt": "2025-10-03T09:00:00.000Z",
+    "bodyText": "Here's what happened in the AI market this week..."
+  },
+  {
+    "id": "email_003",
+    "from": "tyler@portfolio.com",
+    "subject": "Coffee next week?",
+    "receivedAt": "2025-10-04T12:00:00.000Z",
+    "bodyText": "Hey! I'll be near your office on Wednesday morning. Could we find 20 minutes to sync on the pilot rollout?"
+  }
+]

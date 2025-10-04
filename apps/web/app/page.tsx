@@ -1,0 +1,56 @@
+'use client';
+
+import { useState } from 'react';
+import HeroSection from '@/components/HeroSection';
+import EmailDemo from '@/components/EmailDemo';
+import FeaturesSection from '@/components/FeaturesSection';
+import MetricsSection from '@/components/MetricsSection';
+import VoiceDemo from '@/components/VoiceDemo';
+import TechStack from '@/components/TechStack';
+
+export default function Home() {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  return (
+    <main className="min-h-screen bg-black">
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px),
+                           repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)`
+        }}></div>
+      </div>
+      
+      <HeroSection />
+      
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Your Inbox, Reimagined
+          </h2>
+          <p className="text-xl text-gray-300">
+            Watch how Nomad transforms email management in real-time
+          </p>
+        </div>
+        
+        <EmailDemo />
+        
+        <VoiceDemo isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
+        
+        <FeaturesSection />
+        
+        <MetricsSection />
+        
+        <TechStack />
+      </section>
+      
+      <footer className="relative z-10 border-t border-white/20 mt-20">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-white/40 uppercase text-xs tracking-wider mb-2">NYC AI Agent Hackathon 2024</p>
+            <p className="text-white/20 text-xs font-mono">Datadog MCP × phenoml × Airia</p>
+          </div>
+        </div>
+      </footer>
+    </main>
+  );
+}
