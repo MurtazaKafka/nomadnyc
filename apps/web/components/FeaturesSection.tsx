@@ -3,69 +3,69 @@
 export default function FeaturesSection() {
   const features = [
     {
-      icon: '🎯',
+      icon: '01',
       title: 'Smart Prioritization',
-      description: 'AI-powered email ranking based on your patterns and preferences',
-      tech: 'Powered by phenoml'
+      description: 'AI-powered email ranking based on your patterns',
+      tech: 'phenoml'
     },
     {
-      icon: '🎙️',
-      title: 'Voice-First Interface',
-      description: 'Sub-1500ms latency voice commands using advanced Whisper integration',
-      tech: 'OpenAI Whisper + Custom Models'
+      icon: '02',
+      title: 'Voice Interface',
+      description: 'Sub-1500ms latency voice commands',
+      tech: 'Whisper API'
     },
     {
-      icon: '✍️',
+      icon: '03',
       title: 'Tone Cloning',
-      description: 'Responses that sound like you, preserving your unique writing style',
+      description: 'Responses that preserve your writing style',
       tech: 'Fine-tuned LLM'
     },
     {
-      icon: '📊',
+      icon: '04',
       title: 'Real-time Analytics',
-      description: 'Track email patterns and productivity metrics',
-      tech: 'Datadog MCP Integration'
+      description: 'Track email patterns and productivity',
+      tech: 'Datadog MCP'
     },
     {
-      icon: '🔒',
+      icon: '05',
       title: 'Enterprise Security',
       description: 'SOC2 compliant with end-to-end encryption',
-      tech: 'Zero-knowledge architecture'
+      tech: 'Zero-knowledge'
     },
     {
-      icon: '🤖',
+      icon: '06',
       title: 'Autonomous Actions',
-      description: 'Schedule meetings, draft replies, and delegate tasks automatically',
-      tech: 'Airia Agent Framework'
+      description: 'Schedule, draft, and delegate automatically',
+      tech: 'Airia Framework'
     }
   ];
 
   return (
     <div className="mb-16">
       <div className="text-center mb-12">
-        <h3 className="text-3xl font-bold text-white mb-4">
-          Cutting-Edge Features
+        <h3 className="text-3xl font-bold text-white uppercase tracking-wider mb-2">
+          Core Features
         </h3>
-        <p className="text-xl text-gray-300">
-          Built with the latest AI technologies for maximum impact
+        <p className="text-white/40 uppercase text-sm tracking-wider">
+          Enterprise-grade AI capabilities
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
         {features.map((feature, index) => (
           <div
             key={index}
-            className="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105"
+            className="bg-black p-6 hover:bg-white/5 transition-all duration-300"
           >
-            <div className="text-4xl mb-4">{feature.icon}</div>
-            <h4 className="text-xl font-semibold text-white mb-2">
+            <div className="text-4xl font-bold text-white/20 mb-4 font-mono">{feature.icon}</div>
+            <h4 className="text-lg font-bold text-white mb-2 uppercase tracking-wider">
               {feature.title}
             </h4>
-            <p className="text-gray-400 mb-3">
+            <p className="text-white/60 text-sm mb-3">
               {feature.description}
             </p>
-            <div className="text-xs text-purple-400 font-mono">
-              {feature.tech}
+            <div className="text-xs text-white/40 font-mono uppercase">
+              [{feature.tech}]
             </div>
           </div>
         ))}
