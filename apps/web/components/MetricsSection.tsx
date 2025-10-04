@@ -45,59 +45,59 @@ export default function MetricsSection() {
   return (
     <div className="mb-16">
       <div className="text-center mb-12">
-        <h3 className="text-3xl font-bold text-white mb-4">
-          Market Opportunity
+        <h3 className="text-3xl font-bold text-white uppercase tracking-wider mb-2">
+          Market Metrics
         </h3>
-        <p className="text-xl text-gray-300">
-          Transforming productivity for millions of executives
+        <p className="text-white/40 uppercase text-sm tracking-wider">
+          Quantifiable Impact
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/20">
-          <h4 className="text-xl font-semibold text-white mb-6">Target Market</h4>
+        <div className="border border-white/20 p-8">
+          <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-8">Target Market</h4>
           
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-gray-400">US Executives</span>
-                <span className="text-3xl font-bold text-white">
+              <div className="flex justify-between items-end mb-3">
+                <span className="text-white/40 uppercase text-xs tracking-wider">US Executives</span>
+                <span className="text-3xl font-bold text-white font-mono">
                   {animatedValues.users.toLocaleString()}
                 </span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
+              <div className="w-full h-1 bg-white/10">
                 <div 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-2000"
+                  className="h-1 bg-white transition-all duration-2000"
                   style={{ width: `${(animatedValues.users / 4000000) * 100}%` }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-gray-400">Hours Saved/Year</span>
-                <span className="text-3xl font-bold text-green-400">
+              <div className="flex justify-between items-end mb-3">
+                <span className="text-white/40 uppercase text-xs tracking-wider">Hours Saved/Year</span>
+                <span className="text-3xl font-bold text-white font-mono">
                   {animatedValues.timeSaved}+
                 </span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
+              <div className="w-full h-1 bg-white/10">
                 <div 
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-2000"
+                  className="h-1 bg-white transition-all duration-2000"
                   style={{ width: `${(animatedValues.timeSaved / 200) * 100}%` }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between items-end mb-2">
-                <span className="text-gray-400">AI Accuracy</span>
-                <span className="text-3xl font-bold text-blue-400">
+              <div className="flex justify-between items-end mb-3">
+                <span className="text-white/40 uppercase text-xs tracking-wider">AI Accuracy</span>
+                <span className="text-3xl font-bold text-white font-mono">
                   {animatedValues.accuracy}%
                 </span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
+              <div className="w-full h-1 bg-white/10">
                 <div 
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-2000"
+                  className="h-1 bg-white transition-all duration-2000"
                   style={{ width: `${animatedValues.accuracy}%` }}
                 />
               </div>
@@ -105,60 +105,63 @@ export default function MetricsSection() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 backdrop-blur-lg rounded-2xl p-8 border border-blue-500/20">
-          <h4 className="text-xl font-semibold text-white mb-6">Revenue Potential</h4>
+        <div className="border border-white/20 p-8">
+          <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-8">Revenue Model</h4>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 bg-black/20 rounded-lg">
+            <div className="flex justify-between items-center p-4 border border-white/10">
               <div>
-                <div className="text-gray-400 text-sm">Individual Plan</div>
-                <div className="text-2xl font-bold text-white">$15/month</div>
+                <div className="text-white/40 text-xs uppercase tracking-wider">Individual</div>
+                <div className="text-2xl font-bold text-white font-mono">$15</div>
               </div>
-              <div className="text-purple-400">
-                B2C
+              <div className="text-white/40 font-mono text-sm">
+                /month
               </div>
             </div>
 
-            <div className="flex justify-between items-center p-4 bg-black/20 rounded-lg">
+            <div className="flex justify-between items-center p-4 border border-white/10">
               <div>
-                <div className="text-gray-400 text-sm">Business Plan</div>
-                <div className="text-2xl font-bold text-white">$25/user/month</div>
+                <div className="text-white/40 text-xs uppercase tracking-wider">Business</div>
+                <div className="text-2xl font-bold text-white font-mono">$25</div>
               </div>
-              <div className="text-blue-400">
-                B2B
+              <div className="text-white/40 font-mono text-sm">
+                /user/mo
               </div>
             </div>
 
-            <div className="flex justify-between items-center p-4 bg-black/20 rounded-lg">
+            <div className="flex justify-between items-center p-4 border border-white/10">
               <div>
-                <div className="text-gray-400 text-sm">Enterprise</div>
-                <div className="text-2xl font-bold text-white">Custom</div>
+                <div className="text-white/40 text-xs uppercase tracking-wider">Enterprise</div>
+                <div className="text-2xl font-bold text-white font-mono">Custom</div>
               </div>
-              <div className="text-green-400">
-                B2E
+              <div className="text-white/40 font-mono text-sm">
+                Contact
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30">
-              <div className="text-sm text-gray-400 mb-1">Projected ARR (1% market)</div>
-              <div className="text-3xl font-bold text-white">$120M+</div>
+            <div className="mt-8 p-4 border-2 border-white">
+              <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Projected ARR (1%)</div>
+              <div className="text-3xl font-bold text-white font-mono">$120M+</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-black/20 backdrop-blur-lg rounded-2xl p-6">
+      <div className="mt-8 border border-white/20 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-400 mb-1">Daily Emails Processed</div>
-            <div className="text-2xl font-bold text-white">
-              {animatedValues.emails.toLocaleString()}+
+            <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Daily Processing</div>
+            <div className="text-2xl font-bold text-white font-mono">
+              {animatedValues.emails.toLocaleString()}+ emails
             </div>
           </div>
-          <div className="flex gap-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="w-2 h-12 bg-gradient-to-t from-purple-500 to-pink-500 rounded animate-pulse" 
-                style={{ animationDelay: `${i * 0.1}s`, height: `${Math.random() * 48 + 12}px` }}
+          <div className="flex gap-1">
+            {[...Array(20)].map((_, i) => (
+              <div key={i} className="w-1 bg-white/20 animate-pulse" 
+                style={{ 
+                  height: `${Math.random() * 40 + 10}px`,
+                  animationDelay: `${i * 0.05}s`
+                }}
               />
             ))}
           </div>

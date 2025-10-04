@@ -12,8 +12,13 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+    <main className="min-h-screen bg-black">
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px),
+                           repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)`
+        }}></div>
+      </div>
       
       <HeroSection />
       
@@ -38,11 +43,11 @@ export default function Home() {
         <TechStack />
       </section>
       
-      <footer className="relative z-10 border-t border-gray-800 mt-20">
+      <footer className="relative z-10 border-t border-white/20 mt-20">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center text-gray-400">
-            <p className="mb-2">Built with ❤️ for NYC AI Agent Hackathon</p>
-            <p className="text-sm">Powered by Datadog MCP, phenoml, Airia, and more</p>
+          <div className="text-center">
+            <p className="text-white/40 uppercase text-xs tracking-wider mb-2">NYC AI Agent Hackathon 2024</p>
+            <p className="text-white/20 text-xs font-mono">Datadog MCP × phenoml × Airia</p>
           </div>
         </div>
       </footer>

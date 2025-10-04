@@ -72,7 +72,6 @@ export default function EmailDemo() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    // Simulate email loading animation
     let index = 0;
     const interval = setInterval(() => {
       if (index < mockEmails.length) {
@@ -86,12 +85,12 @@ export default function EmailDemo() {
     return () => clearInterval(interval);
   }, []);
 
-  const getPriorityColor = (priority: string) => {
+  const getPrioritySymbol = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-500';
-      case 'today': return 'bg-yellow-500';
-      case 'later': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case 'urgent': return '■';
+      case 'today': return '◧';
+      case 'later': return '□';
+      default: return '○';
     }
   };
 
@@ -99,7 +98,6 @@ export default function EmailDemo() {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      // Simulate reordering by priority
       const sorted = [...emails].sort((a, b) => {
         const priorityOrder = { urgent: 0, today: 1, later: 2 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
@@ -109,55 +107,52 @@ export default function EmailDemo() {
   };
 
   return (
-    <div className="bg-black/20 backdrop-blur-lg rounded-2xl p-8 mb-12">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold text-white">Live Email Prioritization</h3>
+    <div className="border border-white/20 bg-black p-8 mb-12">
+      <div className="flex justify-between items-center mb-8">
+        <h3 className="text-2xl font-bold text-white uppercase tracking-wider">Email Prioritization</h3>
         <button
           onClick={handleProcess}
           disabled={isProcessing}
-          className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-all"
+          className="px-6 py-2 border border-white text-white uppercase tracking-wider hover:bg-white hover:text-black transition-all disabled:opacity-50"
         >
           {isProcessing ? (
             <span className="flex items-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Processing...
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Processing
             </span>
-          ) : 'Process with Nomad'}
+          ) : 'Process with AI'}
         </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-3">
-          <div className="text-sm text-gray-400 mb-2">Inbox ({emails.length} unread)</div>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-2">
+          <div className="text-sm text-white/40 uppercase tracking-wider mb-4">
+            Inbox — {emails.length} Messages
+          </div>
           {emails.map((email) => (
             <div
               key={email.id}
               onClick={() => setSelectedEmail(email)}
-              className={`bg-white/5 border border-white/10 rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-all ${
-                selectedEmail?.id === email.id ? 'ring-2 ring-purple-500' : ''
+              className={`border border-white/10 p-4 cursor-pointer hover:border-white/30 transition-all ${
+                selectedEmail?.id === email.id ? 'border-white bg-white/5' : ''
               }`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-white text-sm">{email.from}</span>
-                    <span className={`px-2 py-0.5 text-xs rounded-full text-white ${getPriorityColor(email.priority)}`}>
-                      {email.priority.toUpperCase()}
-                    </span>
-                    <span className="text-xs text-gray-500">{email.confidence}% confidence</span>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-2xl text-white">{getPrioritySymbol(email.priority)}</span>
+                    <span className="font-mono text-white text-sm">{email.from}</span>
+                    <span className="text-white/30 text-xs">{email.confidence}%</span>
                   </div>
-                  <div className="text-white/90 text-sm font-medium mb-1">{email.subject}</div>
-                  <div className="text-gray-400 text-xs line-clamp-1">{email.preview}</div>
+                  <div className="text-white text-sm font-medium mb-1">{email.subject}</div>
+                  <div className="text-white/40 text-xs font-mono line-clamp-1">{email.preview}</div>
                 </div>
-                <div className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                <div className="text-xs text-white/30 whitespace-nowrap ml-4 font-mono">
                   {email.timestamp}
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded">
+                <span className="text-xs px-2 py-1 border border-white/20 text-white/60 uppercase">
                   {email.category}
                 </span>
               </div>
@@ -165,50 +160,53 @@ export default function EmailDemo() {
           ))}
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+        <div className="border border-white/20 p-6">
           {selectedEmail ? (
             <div>
-              <h4 className="text-lg font-semibold text-white mb-4">AI Analysis</h4>
-              <div className="space-y-4">
+              <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-6">AI Analysis</h4>
+              <div className="space-y-6">
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Summary</div>
-                  <div className="text-white">
+                  <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Summary</div>
+                  <div className="text-white font-mono text-sm">
                     {selectedEmail.priority === 'urgent' 
-                      ? '⚡ Requires immediate attention - contract review deadline today'
+                      ? '→ Requires immediate attention - contract review deadline today'
                       : selectedEmail.priority === 'today'
-                      ? '📅 Schedule meeting request for this week'
-                      : '📚 Informational content - can be reviewed later'}
+                      ? '→ Schedule meeting request for this week'
+                      : '→ Informational content - review when convenient'}
                   </div>
                 </div>
                 
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Suggested Actions</div>
+                  <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Actions</div>
                   <div className="space-y-2">
-                    <button className="w-full px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-all text-sm">
-                      🎯 Draft Response with AI
+                    <button className="w-full px-4 py-2 border border-white/20 text-white hover:bg-white hover:text-black transition-all text-sm uppercase tracking-wider">
+                      Draft Response
                     </button>
-                    <button className="w-full px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-all text-sm">
-                      📅 Add to Calendar
+                    <button className="w-full px-4 py-2 border border-white/20 text-white hover:bg-white hover:text-black transition-all text-sm uppercase tracking-wider">
+                      Add to Calendar
                     </button>
-                    <button className="w-full px-4 py-2 bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-all text-sm">
-                      ✅ Mark as Completed
+                    <button className="w-full px-4 py-2 border border-white/20 text-white hover:bg-white hover:text-black transition-all text-sm uppercase tracking-wider">
+                      Mark Complete
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Context</div>
-                  <div className="text-white text-sm bg-black/20 rounded p-3">
+                  <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Context</div>
+                  <div className="text-white/60 text-sm font-mono border-l-2 border-white/20 pl-4">
                     {selectedEmail.priority === 'urgent' 
-                      ? '📎 Related: Legal team flagged clause 4.2 for review yesterday'
-                      : '🔗 Previous interaction: Met at tech conference last month'}
+                      ? 'Related: Legal team flagged clause 4.2 for review'
+                      : 'Previous: Met at tech conference last month'}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              Select an email to see AI analysis
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="text-6xl text-white/10 mb-4">[ ]</div>
+                <div className="text-white/40 uppercase tracking-wider text-sm">Select an email</div>
+              </div>
             </div>
           )}
         </div>
