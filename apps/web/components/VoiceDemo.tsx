@@ -12,7 +12,7 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
   const [waveformData, setWaveformData] = useState<number[]>(Array(50).fill(0));
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isListening) {
@@ -26,6 +26,7 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
     } else {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
       setWaveformData(Array(50).fill(0));
     }
@@ -33,6 +34,7 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
     };
   }, [isListening]);

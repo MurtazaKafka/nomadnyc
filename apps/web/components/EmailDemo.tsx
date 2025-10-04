@@ -129,35 +129,38 @@ export default function EmailDemo() {
           <div className="text-sm text-white/40 uppercase tracking-wider mb-4">
             Inbox — {emails.length} Messages
           </div>
-          {emails.map((email) => (
-            <div
-              key={email.id}
-              onClick={() => setSelectedEmail(email)}
-              className={`border border-white/10 p-4 cursor-pointer hover:border-white/30 transition-all ${
-                selectedEmail?.id === email.id ? 'border-white bg-white/5' : ''
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl text-white">{getPrioritySymbol(email.priority)}</span>
-                    <span className="font-mono text-white text-sm">{email.from}</span>
-                    <span className="text-white/30 text-xs">{email.confidence}%</span>
+          {emails.map((email) => {
+            const isSelected = selectedEmail ? selectedEmail.id === email.id : false;
+            return (
+              <div
+                key={email.id}
+                onClick={() => setSelectedEmail(email)}
+                className={`border border-white/10 p-4 cursor-pointer hover:border-white/30 transition-all ${
+                  isSelected ? 'border-white bg-white/5' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl text-white">{getPrioritySymbol(email.priority)}</span>
+                      <span className="font-mono text-white text-sm">{email.from}</span>
+                      <span className="text-white/30 text-xs">{email.confidence}%</span>
+                    </div>
+                    <div className="text-white text-sm font-medium mb-1">{email.subject}</div>
+                    <div className="text-white/40 text-xs font-mono line-clamp-1">{email.preview}</div>
                   </div>
-                  <div className="text-white text-sm font-medium mb-1">{email.subject}</div>
-                  <div className="text-white/40 text-xs font-mono line-clamp-1">{email.preview}</div>
+                  <div className="text-xs text-white/30 whitespace-nowrap ml-4 font-mono">
+                    {email.timestamp}
+                  </div>
                 </div>
-                <div className="text-xs text-white/30 whitespace-nowrap ml-4 font-mono">
-                  {email.timestamp}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs px-2 py-1 border border-white/20 text-white/60 uppercase">
+                    {email.category}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs px-2 py-1 border border-white/20 text-white/60 uppercase">
-                  {email.category}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="border border-white/20 p-6">

@@ -9,6 +9,7 @@ export default function MetricsSection() {
     accuracy: 0,
     emails: 0
   });
+  const [sparklineHeights, setSparklineHeights] = useState<number[]>(() => Array(20).fill(20));
 
   useEffect(() => {
     const duration = 2000;
@@ -38,6 +39,17 @@ export default function MetricsSection() {
         clearInterval(timer);
       }
     }, interval);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const generateHeights = () => Array.from({ length: 20 }, () => Math.random() * 40 + 10);
+    setSparklineHeights(generateHeights());
+
+    const timer = setInterval(() => {
+      setSparklineHeights(generateHeights());
+    }, 1200);
 
     return () => clearInterval(timer);
   }, []);
@@ -156,10 +168,12 @@ export default function MetricsSection() {
             </div>
           </div>
           <div className="flex gap-1">
-            {[...Array(20)].map((_, i) => (
-              <div key={i} className="w-1 bg-white/20 animate-pulse" 
-                style={{ 
-                  height: `${Math.random() * 40 + 10}px`,
+            {sparklineHeights.map((height, i) => (
+              <div
+                key={i}
+                className="w-1 bg-white/20 animate-pulse"
+                style={{
+                  height: `${height}px`,
                   animationDelay: `${i * 0.05}s`
                 }}
               />
