@@ -1,23 +1,88 @@
 [
   {
     "id": "email_001",
-    "from": "jane@vip-client.com",
+    "from": "jane.thompson@vip-client.com",
     "subject": "URGENT: Contract redline needed by EOD",
     "receivedAt": "2025-10-04T13:15:00.000Z",
-    "bodyText": "Hi team, the investor counsel sent over the latest contract draft and needs feedback by end of day. Can you review clause 4.2 and confirm we're aligned on the revenue share adjustments?"
+    "bodyText": "Hi team,\n\nThe investor counsel sent over the latest contract draft and needs feedback by end of day. Can you review clause 4.2 and confirm we're aligned on the revenue share adjustments?\n\nSpecifically, they're proposing:\n- 15% revenue share on first $1M\n- 12% on next $4M\n- 10% thereafter\n\nThis differs from our initial proposal. Please review ASAP as we need to close this round by Friday.\n\nBest,\nJane",
+    "threadId": "thread_001",
+    "labels": ["urgent", "contracts", "vip"]
   },
   {
     "id": "email_002",
-    "from": "newsletter@industryinsights.com",
-    "subject": "Weekly AI market digest",
-    "receivedAt": "2025-10-03T09:00:00.000Z",
-    "bodyText": "Here's what happened in the AI market this week..."
+    "from": "sarah.chen@techstartup.io",
+    "subject": "Re: Product demo follow-up",
+    "receivedAt": "2025-10-04T14:30:00.000Z",
+    "bodyText": "Hi there,\n\nThanks for the great demo yesterday! Our team was impressed with the platform's capabilities.\n\nA few follow-up questions:\n1. Can you send over the pricing for the Enterprise tier?\n2. What's the typical implementation timeline?\n3. Do you offer pilot programs?\n\nWe'd like to move forward with a pilot if possible. Can we schedule a call next week to discuss?\n\nThanks,\nSarah Chen\nCTO, TechStartup",
+    "threadId": "thread_002",
+    "labels": ["sales", "follow-up"]
   },
   {
     "id": "email_003",
-    "from": "tyler@portfolio.com",
+    "from": "tyler.williams@portfolio.com",
     "subject": "Coffee next week?",
     "receivedAt": "2025-10-04T12:00:00.000Z",
-    "bodyText": "Hey! I'll be near your office on Wednesday morning. Could we find 20 minutes to sync on the pilot rollout?"
+    "bodyText": "Hey!\n\nI'll be near your office on Wednesday morning. Could we find 20 minutes to sync on the pilot rollout?\n\nAlso wanted to discuss the Q4 roadmap and get your thoughts on the new ML features.\n\nLet me know what works!\n\nTyler",
+    "threadId": "thread_003",
+    "labels": ["meetings", "networking"]
+  },
+  {
+    "id": "email_004",
+    "from": "noreply@github.com",
+    "subject": "[GitHub] Security alert: dependency vulnerability detected",
+    "receivedAt": "2025-10-04T10:45:00.000Z",
+    "bodyText": "GitHub found a security vulnerability in one of your dependencies.\n\nPackage: axios\nSeverity: High\nPatched version: >=1.6.0\nCurrent version: 1.5.2\n\nRecommended action: Update to version 1.6.0 or later.\n\nView security advisory: https://github.com/advisories/...",
+    "labels": ["automated", "security"]
+  },
+  {
+    "id": "email_005",
+    "from": "alex.kumar@engineering.team",
+    "subject": "Code review requested: Feature/voice-integration",
+    "receivedAt": "2025-10-04T11:20:00.000Z",
+    "bodyText": "Hi,\n\nI've completed the voice integration feature and it's ready for review.\n\nPR: #456\nChanges:\n- Implemented Whisper API integration\n- Added voice command processing\n- Created audio streaming pipeline\n- Updated tests\n\nAll tests are passing and I've tested locally with various audio formats.\n\nCould you review when you get a chance? We're hoping to merge by EOW.\n\nThanks!\nAlex",
+    "threadId": "thread_004",
+    "labels": ["code-review", "engineering"]
+  },
+  {
+    "id": "email_006",
+    "from": "newsletter@industryinsights.com",
+    "subject": "Weekly AI market digest",
+    "receivedAt": "2025-10-03T09:00:00.000Z",
+    "bodyText": "This week in AI:\n\n1. OpenAI announces new reasoning models\n2. Google launches Gemini 2.0 with multimodal capabilities\n3. EU passes new AI regulation framework\n4. Anthropic raises $2B at $40B valuation\n\nRead the full digest at our website...",
+    "labels": ["newsletter", "fyi"]
+  },
+  {
+    "id": "email_007",
+    "from": "hr@company.com",
+    "subject": "Action Required: Benefits enrollment deadline Oct 15",
+    "receivedAt": "2025-10-04T08:00:00.000Z",
+    "bodyText": "Dear Team,\n\nThis is a reminder that open enrollment for 2026 benefits closes on October 15th.\n\nIf you haven't already:\n1. Review your current benefits\n2. Consider any life changes\n3. Submit your selections in the HR portal\n\nFailure to enroll by the deadline will result in default coverage.\n\nQuestions? Contact HR at benefits@company.com\n\nBest,\nHR Team",
+    "labels": ["hr", "action-required"]
+  },
+  {
+    "id": "email_008",
+    "from": "mike.johnson@legalfirm.com",
+    "subject": "Re: NDA for Project Phoenix",
+    "receivedAt": "2025-10-04T15:45:00.000Z",
+    "bodyText": "Team,\n\nI've reviewed the NDA and have a few minor comments:\n\n1. Section 2.3 - Suggest extending confidentiality period to 5 years\n2. Section 4.1 - Need to add carve-out for publicly available information\n3. Section 6 - Jurisdiction should be Delaware\n\nOtherwise looks good. Once these changes are made, we can proceed with signatures.\n\nPlease send the revised version when ready.\n\nMike Johnson\nPartner, Legal Firm LLP",
+    "threadId": "thread_005",
+    "labels": ["legal", "contracts"]
+  },
+  {
+    "id": "email_009",
+    "from": "support@cloudservice.io",
+    "subject": "Your monthly usage report - September 2025",
+    "receivedAt": "2025-10-01T06:00:00.000Z",
+    "bodyText": "Your September usage summary:\n\nCompute hours: 1,247 (↑ 15% from August)\nStorage: 2.4TB (↑ 8% from August)\nBandwidth: 890GB (↓ 3% from August)\n\nTotal charges: $3,456.78\n\nView detailed breakdown in your dashboard.\n\nThank you for using CloudService!",
+    "labels": ["billing", "automated"]
+  },
+  {
+    "id": "email_010",
+    "from": "jennifer.lee@bigcorp.com",
+    "subject": "Urgent: Server outage affecting production",
+    "receivedAt": "2025-10-04T16:30:00.000Z",
+    "bodyText": "URGENT - PLEASE ACKNOWLEDGE\n\nWe're experiencing a critical outage on production servers.\n\nImpact:\n- API response times degraded by 10x\n- Some users experiencing timeouts\n- Database connections intermittent\n\nIncident started: 4:15 PM EST\nSeverity: P1\n\nEngineering team is investigating. Please join the incident bridge: meet.company.com/incident\n\nWill send updates every 30 minutes.\n\nJennifer Lee\nVP Engineering",
+    "threadId": "thread_006",
+    "labels": ["urgent", "incident", "production"]
   }
 ]

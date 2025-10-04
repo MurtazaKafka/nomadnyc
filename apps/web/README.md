@@ -2,7 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, create an `.env.local` (or copy `.env.example`) to point at the agent-service API:
+
+```bash
+cp .env.example .env.local
+# edit NEXT_PUBLIC_AGENT_SERVICE_URL if your backend runs elsewhere
+```
+
+Then run the development server:
 
 ```bash
 npm run dev

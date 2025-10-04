@@ -46,7 +46,7 @@ export default function Home() {
       <footer className="relative z-10 border-t border-white/20 mt-20">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center">
-            <p className="text-white/40 uppercase text-xs tracking-wider mb-2">NYC AI Agent Hackathon 2024</p>
+            <p className="text-white/40 uppercase text-xs tracking-wider mb-2">NYC AI Agent Hackathon 2025</p>
             <p className="text-white/20 text-xs font-mono">Datadog MCP × phenoml × Airia</p>
           </div>
         </div>
