@@ -16,8 +16,23 @@ declare module "openai" {
     apiKey: string;
   }
 
+  interface ChatMessage {
+    role: "system" | "user" | "assistant";
+    content: string;
+  }
+
   export default class OpenAI {
     constructor(options: OpenAIOptions);
+    chat: {
+      completions: {
+        create(input: {
+          model: string;
+          messages: ChatMessage[];
+          temperature?: number;
+          max_tokens?: number;
+        }): Promise<{ choices: Array<{ message?: { content?: string } | null }> }>;
+      };
+    };
     responses: {
       create(input: {
         model: string;

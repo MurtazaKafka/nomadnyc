@@ -17,6 +17,9 @@ describe("EmailAgent", () => {
   });
 
   it("returns a prioritized email with summary and suggestions", async () => {
+    vi.spyOn(Summarizer.prototype, "summarize").mockResolvedValueOnce(
+      "• Urgency: Follow up soon\n• Request: Schedule investor sync\n• Next step: Share availability"
+    );
     const agent = new EmailAgent({ phenomlClient: null });
     const output = await agent.run(SAMPLE_EMAIL);
 

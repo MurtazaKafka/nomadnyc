@@ -8,7 +8,7 @@ export class Summarizer {
   private readonly client: OpenAI | null;
 
   constructor() {
-    this.client = config.openAiApiKey ? new OpenAI({ apiKey: config.openAiApiKey }) : null;
+  this.client = config.openaiApiKey ? new OpenAI({ apiKey: config.openaiApiKey }) : null;
   }
 
   async summarize(email: EmailContent): Promise<string> {

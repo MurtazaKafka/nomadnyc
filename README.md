@@ -36,7 +36,13 @@ cp .env.example .env  # Copy environment template
 pnpm dev
 ```
 
-The agent service will process sample emails and show prioritization in the console.
+The agent service now exposes a REST API at `http://localhost:8081`:
+
+- `GET /api/emails` returns the prioritized + summarized dataset (seeded from `data/sample-emails.json`).
+- `POST /api/emails` accepts a raw email payload and streams it through the agent pipeline.
+- `POST /api/emails/refresh` replays the sample set.
+
+To run the original console demo once, use `pnpm --filter agent-service sample`.
 
 ### 2. Web Demo Frontend (Port 3000) 
 ```bash
@@ -50,6 +56,8 @@ Open http://localhost:3000 to see the demo website with:
 - Voice control simulation
 - Sponsor tool integrations showcase
 - Market metrics visualization
+
+> Configure the frontend agent URL by creating `apps/web/.env.local` with `NEXT_PUBLIC_AGENT_SERVICE_URL=http://localhost:8081` (defaults to this value when unset).
 
 ### 3. Mobile App (Expo)
 ```bash
