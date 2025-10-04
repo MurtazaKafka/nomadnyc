@@ -20,16 +20,21 @@ export class Summarizer {
 Email Subject: ${email.subject}
 Email Body:
 ${email.bodyText}`;
+    try {
+      const response = await this.client.responses.create({
+        model: MODEL,
+        input: prompt,
+        temperature: 0.4,
+        max_output_tokens: 200,
+      });
 
-    const response = await this.client.responses.create({
-      model: MODEL,
-      input: prompt,
-      temperature: 0.4,
-      max_output_tokens: 200,
-    });
-
-    const text = response.output_text?.trim();
-    return text && text.length > 0 ? text : this.fallbackSummary(email);
+      const text = response.output_text?.trim();
+      return text && text.length > 0 ? text : this.fallbackSummary(email);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn("Falling back to heuristic summary due to OpenAI error", error);
+      return this.fallbackSummary(email);
+    }
   }
 
   async suggestActions(email: EmailContent): Promise<EmailActionSuggestion[]> {

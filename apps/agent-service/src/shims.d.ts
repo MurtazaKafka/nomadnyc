@@ -46,12 +46,6 @@ declare module "vitest" {
     toBeGreaterThan(num: number): void;
     toContain(text: string): void;
   };
-  export const vi: {
-    restoreAllMocks(): void;
-    spyOn<T, K extends keyof T>(object: T, method: K, accessType?: "get" | "set" | undefined): {
-      mockReturnValue(value: T[K]): void;
-      mockResolvedValueOnce(value: unknown): void;
-    };
-  };
+  export const vi: any;
   export const beforeEach: (fn: () => void) => void;
 }

@@ -23,6 +23,12 @@ async function main() {
     console.log("\n=== Email ===");
     console.log(`${email.subject} (${email.from})`);
     console.log(`Urgency: ${output.email.urgency} (confidence ${(output.email.confidence * 100).toFixed(0)}%)`);
+    if (output.email.priorityMeta) {
+      const meta = output.email.priorityMeta;
+      const latency = meta.latencyMs ? `${meta.latencyMs}ms` : "n/a";
+      const model = meta.modelVersion ?? "heuristic";
+      console.log(`Priority source: ${meta.source} • rawScore ${(meta.rawScore * 100).toFixed(0)}% • latency ${latency} • model ${model}`);
+    }
     console.log("Summary:\n" + output.summary);
     console.log("Suggestions:");
     output.suggestions.forEach((suggestion) => {

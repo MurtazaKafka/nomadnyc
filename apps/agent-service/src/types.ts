@@ -18,12 +18,20 @@ export interface EmailContent extends EmailMetadata {
 export interface PrioritizedEmail extends EmailContent {
   urgency: EmailUrgency;
   confidence: number;
+  priorityMeta?: PriorityMeta;
 }
 
 export interface ContextResource {
   title: string;
   summary: string;
   url?: string;
+}
+
+export interface PriorityMeta {
+  source: "phenoml" | "heuristic";
+  modelVersion?: string;
+  latencyMs?: number;
+  rawScore: number;
 }
 
 export interface EmailActionSuggestion {
