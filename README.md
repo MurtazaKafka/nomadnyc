@@ -99,6 +99,19 @@ OPENAI_API_KEY=your_openai_key
 PHENOML_API_TOKEN=your_phenoml_token
 PHENOML_MODEL=nomad-email-priority
 AIRIA_API_KEY=your_airia_key
+IMAP_HOST=imap.example.com
+IMAP_PORT=993
+IMAP_SECURE=true
+IMAP_USER=you@example.com
+IMAP_PASSWORD=your_app_password
+IMAP_MAILBOX=INBOX
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=you@example.com
+SMTP_PASSWORD=your_smtp_password
+EMAIL_FROM_ADDRESS=nomad-assistant@example.com
+EMAIL_SYNC_BATCH_SIZE=10
 ```
 
 ## 👥 Team Collaboration

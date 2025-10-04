@@ -7,6 +7,9 @@ export interface EmailMetadata {
   receivedAt: string; // ISO string
   threadId?: string;
   labels?: string[];
+  messageId?: string;
+  replyTo?: string;
+  mailbox?: string;
 }
 
 export interface EmailContent extends EmailMetadata {

@@ -16,6 +16,8 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
+  const [responseMetadata, setResponseMetadata] = useState<Record<string, unknown> | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [waveformData, setWaveformData] = useState<number[]>(Array(50).fill(0));
 
@@ -24,6 +26,8 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const stopTimeoutRef = useRef<number | null>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
 
   const getAgentUrl = useCallback(buildAgentUrl, []);
 
@@ -49,6 +53,41 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
       }
     };
   }, [isListening]);
+
+  useEffect(() => {
+    const element = audioElementRef.current;
+
+    if (!element) {
+      return undefined;
+    }
+
+    if (!audioUrl) {
+      element.pause();
+      element.removeAttribute('src');
+      element.load();
+      setIsPlaying(false);
+      return undefined;
+    }
+
+    element.src = audioUrl;
+    element.currentTime = 0;
+
+    const playPromise = element.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch((playError) => {
+          console.error('Failed to play synthesized audio', playError);
+          setIsPlaying(false);
+        });
+    }
+
+    return () => {
+      element.pause();
+    };
+  }, [audioUrl, setIsPlaying]);
 
   const cleanupStream = useCallback(() => {
     if (stopTimeoutRef.current) {
@@ -89,13 +128,41 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
         throw new Error(`Transcription failed with status ${upstream.status}`);
       }
 
-      const payload = await upstream.json();
+  const payload = await upstream.json();
       setTranscript(payload.command?.text ?? '(no speech detected)');
       setResponse(payload.response?.text ?? '');
+  setResponseMetadata(payload.response?.metadata ?? null);
+      const audioBase64: string | undefined = payload.response?.audioBase64;
+      const audioMime: string = payload.response?.audioContentType ?? 'audio/mpeg';
+
+      if (audioBase64) {
+        try {
+          const binaryString = window.atob(audioBase64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i += 1) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: audioMime });
+          if (audioObjectUrlRef.current) {
+            URL.revokeObjectURL(audioObjectUrlRef.current);
+          }
+          const objectUrl = URL.createObjectURL(blob);
+          audioObjectUrlRef.current = objectUrl;
+          setAudioUrl(objectUrl);
+        } catch (decodeError) {
+          console.error('Failed to decode audio response', decodeError);
+          setAudioUrl(null);
+        }
+      } else {
+        setAudioUrl(null);
+      }
       setError(null);
     } catch (err) {
       console.error('Unable to process voice command', err);
       setError('Unable to reach the voice agent. Ensure the agent service is running.');
+      setAudioUrl(null);
+      setResponseMetadata(null);
     } finally {
       audioChunksRef.current = [];
       cleanupStream();
@@ -121,6 +188,7 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
       setError(null);
       setTranscript('');
       setResponse('');
+  setResponseMetadata(null);
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
@@ -162,6 +230,14 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
     return () => {
       stopRecording();
       cleanupStream();
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current = null;
+      }
+      if (audioObjectUrlRef.current) {
+        URL.revokeObjectURL(audioObjectUrlRef.current);
+        audioObjectUrlRef.current = null;
+      }
     };
   }, [cleanupStream, stopRecording]);
 
@@ -172,6 +248,45 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
       void startRecording();
     }
   }, [isRecording, startRecording, stopRecording]);
+
+  const formatTimestamp = (timestamp?: string) => {
+    if (!timestamp) {
+      return '';
+    }
+
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    return date.toLocaleString();
+  };
+
+  const emailHighlights = Array.isArray((responseMetadata as any)?.emails)
+    ? ((responseMetadata as any).emails as Array<any>).map((item) => ({
+        id: typeof item?.id === 'string' ? item.id : undefined,
+        subject: typeof item?.subject === 'string' ? item.subject : undefined,
+        from: typeof item?.from === 'string' ? item.from : undefined,
+        receivedAt: typeof item?.receivedAt === 'string' ? item.receivedAt : undefined,
+        urgency: typeof item?.urgency === 'string' ? item.urgency : undefined,
+      }))
+    : [];
+
+  const draftRaw = (responseMetadata as any)?.draft;
+  const draftDetails = draftRaw && typeof draftRaw === 'object'
+    ? {
+        subject: typeof draftRaw.subject === 'string' ? draftRaw.subject : undefined,
+        body: typeof draftRaw.body === 'string' ? draftRaw.body : undefined,
+      }
+    : null;
+
+  const draftPreview = typeof (responseMetadata as any)?.preview === 'string'
+    ? (responseMetadata as any).preview as string
+    : undefined;
+
+  const draftId = typeof (responseMetadata as any)?.draftId === 'string'
+    ? (responseMetadata as any).draftId as string
+    : undefined;
 
   return (
     <div className="border border-white/20 bg-black p-8 mb-12">
@@ -254,14 +369,73 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
         </div>
       )}
 
+      {emailHighlights.length > 0 && (
+        <div className="mb-8">
+          <div className="text-xs text-white/40 uppercase tracking-wider mb-3">Emails Read Aloud</div>
+          <div className="space-y-3">
+            {emailHighlights.map((item, index) => (
+              <div key={item.id ?? `email-${index}`} className="border border-white/10 p-4">
+                <div className="text-white font-semibold text-sm mb-1 uppercase tracking-wide">{item.subject ?? 'No subject'}</div>
+                <div className="text-white/60 text-xs mb-1">
+                  From {item.from ?? 'unknown sender'}
+                  {item.urgency ? ` • ${item.urgency}` : ''}
+                </div>
+                {formatTimestamp(item.receivedAt) && (
+                  <div className="text-white/30 text-xs">Received {formatTimestamp(item.receivedAt)}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {draftDetails && (draftDetails.subject || draftDetails.body || draftPreview) && (
+        <div className="mb-8 border border-white/15 p-4 bg-white/5">
+          <div className="text-xs text-white/40 uppercase tracking-wider mb-3">Draft Ready</div>
+          {draftDetails.subject && (
+            <div className="text-white font-semibold text-sm mb-2">Subject: {draftDetails.subject}</div>
+          )}
+          {draftPreview && (
+            <div className="text-white/60 text-xs mb-2">Preview: {draftPreview}</div>
+          )}
+          {draftDetails.body && (
+            <pre className="text-white/70 text-xs whitespace-pre-wrap border border-white/10 bg-black/20 p-3">{draftDetails.body}</pre>
+          )}
+          {draftId && (
+            <div className="text-white/30 text-xs mt-3">Draft ID: {draftId}</div>
+          )}
+        </div>
+      )}
+
+      {audioUrl && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs text-white/40 uppercase tracking-wider">Voice Playback</div>
+            {isPlaying && <div className="text-white/60 text-xs uppercase tracking-wider">Playing…</div>}
+          </div>
+          <audio
+            ref={audioElementRef}
+            controls
+            autoPlay
+            className="w-full"
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => setIsPlaying(false)}
+            onError={() => setIsPlaying(false)}
+          >
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-3 gap-4">
         <div className="border border-white/10 p-4">
           <div className="text-white text-2xl mb-2 font-mono">[1]</div>
           <div className="text-white font-bold text-sm mb-1 uppercase">Email</div>
           <div className="text-white/40 text-xs font-mono">
-            "Read urgent emails"
+            "Read my latest emails"
             <br />
-            "Reply to Sarah"
+            "Write email to Ryan"
           </div>
         </div>
         <div className="border border-white/10 p-4">

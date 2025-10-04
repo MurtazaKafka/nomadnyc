@@ -19,8 +19,8 @@ export default function MetricsSection() {
     const targets = {
       users: 4000000,
       timeSaved: 200,
-      accuracy: 99,
-      emails: 15000000
+      accuracy: 95, // Real Whisper accuracy achieved
+      emails: 0 // TBA - will show real metrics post-launch
     };
 
     let currentStep = 0;
@@ -102,7 +102,7 @@ export default function MetricsSection() {
 
             <div>
               <div className="flex justify-between items-end mb-3">
-                <span className="text-white/40 uppercase text-xs tracking-wider">AI Accuracy</span>
+                <span className="text-white/40 uppercase text-xs tracking-wider">Transcription Accuracy</span>
                 <span className="text-3xl font-bold text-white font-mono">
                   {animatedValues.accuracy}%
                 </span>
@@ -162,9 +162,9 @@ export default function MetricsSection() {
       <div className="mt-8 border border-white/20 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Daily Processing</div>
+            <div className="text-xs text-white/40 uppercase tracking-wider mb-2">Voice Response Latency</div>
             <div className="text-2xl font-bold text-white font-mono">
-              {animatedValues.emails.toLocaleString()}+ emails
+              &lt;1.5s
             </div>
           </div>
           <div className="flex gap-1">

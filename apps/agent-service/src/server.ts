@@ -7,6 +7,10 @@ import { EmailAgent } from "./services/emailAgent";
 import { loadSampleEmails } from "./utils/emailLoader";
 import { VoiceService } from "./services/voiceService";
 import { EmailResponseGenerator } from "./services/emailResponseGenerator";
+import type { DraftEmail } from "./services/emailResponseGenerator";
+import { EmailSyncService } from "./services/emailSyncService";
+import type { SyncResult } from "./services/emailSyncService";
+import { config } from "./config";
 
 interface CreateEmailRequest
   extends Partial<Pick<EmailContent, "id" | "from" | "subject" | "bodyText" | "bodyHtml" | "receivedAt" | "threadId" | "labels">> {}
@@ -15,9 +19,17 @@ const app = express();
 const agent = new EmailAgent();
 const voiceService = new VoiceService();
 const responseGenerator = new EmailResponseGenerator();
+const emailSyncService = new EmailSyncService();
 const emailStore = new Map<string, EmailAgentOutput>();
+const draftStore = new Map<string, DraftEmail>();
 const PORT = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 8081);
 const corsOrigins = process.env.CORS_ORIGINS?.split(",").map((origin) => origin.trim());
+
+type HydrateSource = "imap" | "sample" | "cache";
+
+interface HydrateResult extends SyncResult {
+  source: HydrateSource;
+}
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -38,8 +50,9 @@ app.get("/health", (_req: Request, res: Response) => {
 
 app.get("/api/emails", async (_req: Request, res: Response) => {
   try {
-    if (emailStore.size === 0) {
-      await seedFromSamples();
+    const hydrateResult = await hydrateEmailStore();
+    if (hydrateResult.source) {
+      res.setHeader("x-nomad-email-source", hydrateResult.source);
     }
 
     res.json(Array.from(emailStore.values()));
@@ -92,8 +105,13 @@ app.delete("/api/emails/:id", (req: Request, res: Response) => {
 
 app.post("/api/emails/refresh", async (_req: Request, res: Response) => {
   try {
-    await seedFromSamples(true);
-    res.status(200).json({ status: "refreshed", emails: emailStore.size });
+    const hydrateResult = await hydrateEmailStore({ force: true });
+    res.status(200).json({
+      status: "refreshed",
+      emails: emailStore.size,
+      source: hydrateResult.source,
+      stats: hydrateResult,
+    });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Failed to refresh sample emails", error);
@@ -109,17 +127,108 @@ app.post("/api/voice/transcribe", upload.single("audio"), async (req: Request, r
 
     const command = await voiceService.transcribeAudio(req.file.buffer);
     const response = await voiceService.processVoiceCommand(command);
+    let responseText = response.text;
 
     if (response.action === "fetch_urgent") {
+      await hydrateEmailStore();
       const urgentEmails = Array.from(emailStore.values())
-        .filter(e => e.email.urgency === "urgent");
-      const speechText = urgentEmails.length > 0 
-        ? voiceService.formatEmailForSpeech(urgentEmails[0])
-        : "You have no urgent emails.";
-      response.text = speechText;
+        .filter((e) => e.email.urgency === "urgent")
+        .sort((a, b) => new Date(b.email.receivedAt).getTime() - new Date(a.email.receivedAt).getTime());
+
+      if (urgentEmails.length > 0) {
+        const topEmail = urgentEmails[0];
+        responseText = voiceService.formatEmailForSpeech(topEmail);
+        response.metadata = {
+          ...(response.metadata ?? {}),
+          emailId: topEmail.email.id,
+          subject: topEmail.email.subject,
+          from: topEmail.email.from,
+          urgency: topEmail.email.urgency,
+        };
+      } else {
+        responseText = "You have no urgent emails.";
+      }
+    } else if (response.action === "read_emails") {
+      await hydrateEmailStore();
+      const filter = typeof response.metadata?.filter === "string" ? String(response.metadata.filter) : "recent";
+      const requestedCountRaw = response.metadata?.count;
+      const requestedCount = typeof requestedCountRaw === "number"
+        ? requestedCountRaw
+        : typeof requestedCountRaw === "string"
+          ? Number.parseInt(requestedCountRaw, 10)
+          : 1;
+      const safeRequestedCount = Number.isFinite(requestedCount) ? requestedCount : 1;
+      const count = Math.min(Math.max(safeRequestedCount, 1), 5);
+
+      let candidates = Array.from(emailStore.values()).sort(
+        (a, b) => new Date(b.email.receivedAt).getTime() - new Date(a.email.receivedAt).getTime(),
+      );
+
+      if (filter === "urgent") {
+        candidates = candidates.filter((item) => item.email.urgency === "urgent");
+      }
+
+      const selected = candidates.slice(0, count);
+
+      if (selected.length === 0) {
+        responseText = filter === "urgent"
+          ? "You have no important emails right now."
+          : "I couldn't find any emails to read just yet.";
+      } else {
+        const snippets = selected.map((output) => voiceService.formatEmailForSpeech(output));
+        responseText = snippets.join(" Next email. ");
+        response.metadata = {
+          ...(response.metadata ?? {}),
+          filter,
+          count: selected.length,
+          emails: selected.map((item) => ({
+            id: item.email.id,
+            subject: item.email.subject,
+            from: item.email.from,
+            receivedAt: item.email.receivedAt,
+            urgency: item.email.urgency,
+          })),
+        };
+      }
+    } else if (response.action === "compose_email") {
+      const recipientHint = typeof response.metadata?.recipientHint === "string" ? response.metadata.recipientHint : undefined;
+      const topicHint = typeof response.metadata?.topicHint === "string" ? response.metadata.topicHint : undefined;
+
+      const draft = await responseGenerator.generateDraftEmail({
+        recipientHint,
+        topicHint,
+        commandText: command.text,
+      });
+
+      draftStore.set(draft.id, draft);
+
+      const recipientLabel = draft.metadata.intendedRecipient ? ` to ${draft.metadata.intendedRecipient}` : "";
+      const topicLabel = draft.metadata.topic ? ` about ${draft.metadata.topic}` : "";
+      responseText = `I've drafted an email${recipientLabel}${topicLabel}. Review it when you're ready.`;
+      response.metadata = {
+        ...(response.metadata ?? {}),
+        draftId: draft.id,
+        draft,
+      };
     }
 
-    res.json({ command, response });
+    let audioBase64: string | undefined;
+    try {
+      const audioBuffer = await voiceService.generateSpeech(responseText);
+      audioBase64 = audioBuffer.toString("base64");
+    } catch (error) {
+      console.error("Failed to synthesize voice response:", error);
+    }
+
+    res.json({
+      command,
+      response: {
+        ...response,
+        text: responseText,
+        audioBase64,
+        audioContentType: "audio/mpeg",
+      },
+    });
   } catch (error) {
     console.error("Voice transcription failed:", error);
     res.status(500).json({ error: "Failed to process voice command" });
@@ -153,7 +262,12 @@ app.post("/api/emails/:id/reply", async (req: Request, res: Response) => {
 
     const options = req.body;
     const reply = await responseGenerator.generateReply(emailOutput.email, options);
-    res.json(reply);
+    const delivery = await emailSyncService.sendReply(emailOutput.email, reply);
+
+    res.json({
+      ...reply,
+      delivery,
+    });
   } catch (error) {
     console.error("Failed to generate reply:", error);
     res.status(500).json({ error: "Failed to generate email reply" });
@@ -214,26 +328,89 @@ app.post("/api/emails/ingest", async (req: Request, res: Response) => {
   }
 });
 
-async function seedFromSamples(force = false): Promise<void> {
+async function hydrateEmailStore(options: { force?: boolean; markAsSeen?: boolean } = {}): Promise<HydrateResult> {
+  const { force = false, markAsSeen = false } = options;
+  const errors: string[] = [];
+
   if (!force && emailStore.size > 0) {
-    return;
+    return {
+      source: "cache",
+      fetched: 0,
+      processed: 0,
+      skipped: 0,
+  mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : "sample",
+      errors,
+    };
   }
 
-  try {
-    const emails = await loadSampleEmails();
-    const outputs = await Promise.all(emails.map((email) => agent.run(email)));
-    emailStore.clear();
-    outputs.forEach((output) => {
-      emailStore.set(output.email.id, output);
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to seed sample emails", error);
+  if (emailSyncService.isImapConfigured()) {
+    if (force) {
+      emailStore.clear();
+    }
+
+    try {
+      const syncResult = await emailSyncService.syncMailbox(agent, emailStore, {
+        limit: config.email.syncBatchSize,
+        resetCache: force,
+        markAsSeen,
+      });
+
+      if (syncResult.errors.length > 0) {
+        errors.push(...syncResult.errors);
+      }
+
+      if (syncResult.processed > 0 || emailStore.size > 0) {
+        return {
+          source: "imap",
+          ...syncResult,
+          errors,
+        };
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(message);
+    }
   }
+
+  if (force) {
+    emailStore.clear();
+  }
+
+  if (emailStore.size === 0) {
+    try {
+      const emails = await loadSampleEmails();
+      const outputs = await Promise.all(emails.map((email) => agent.run(email)));
+      emailStore.clear();
+      outputs.forEach((output) => {
+        emailStore.set(output.email.id, output);
+      });
+
+      return {
+        source: "sample",
+        fetched: emails.length,
+        processed: outputs.length,
+        skipped: 0,
+        mailbox: config.email.imapMailbox,
+        errors,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(message);
+    }
+  }
+
+  return {
+    source: emailStore.size > 0 ? "cache" : "sample",
+    fetched: 0,
+    processed: 0,
+    skipped: 0,
+  mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : "sample",
+    errors,
+  };
 }
 
 async function main() {
-  await seedFromSamples();
+  await hydrateEmailStore();
 
   app.listen(PORT, () => {
     // eslint-disable-next-line no-console
