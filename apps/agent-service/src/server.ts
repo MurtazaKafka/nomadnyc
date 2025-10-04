@@ -7,6 +7,7 @@ import { EmailAgent } from "./services/emailAgent";
 import { loadSampleEmails } from "./utils/emailLoader";
 import { VoiceService } from "./services/voiceService";
 import { EmailResponseGenerator } from "./services/emailResponseGenerator";
+import type { DraftEmail } from "./services/emailResponseGenerator";
 import { EmailSyncService } from "./services/emailSyncService";
 import type { SyncResult } from "./services/emailSyncService";
 import { config } from "./config";
@@ -20,6 +21,7 @@ const voiceService = new VoiceService();
 const responseGenerator = new EmailResponseGenerator();
 const emailSyncService = new EmailSyncService();
 const emailStore = new Map<string, EmailAgentOutput>();
+const draftStore = new Map<string, DraftEmail>();
 const PORT = Number(process.env.PORT ?? process.env.AGENT_PORT ?? 8081);
 const corsOrigins = process.env.CORS_ORIGINS?.split(",").map((origin) => origin.trim());
 
@@ -137,7 +139,7 @@ app.post("/api/voice/transcribe", upload.single("audio"), async (req: Request, r
         const topEmail = urgentEmails[0];
         responseText = voiceService.formatEmailForSpeech(topEmail);
         response.metadata = {
-          ...response.metadata,
+          ...(response.metadata ?? {}),
           emailId: topEmail.email.id,
           subject: topEmail.email.subject,
           from: topEmail.email.from,
@@ -146,6 +148,68 @@ app.post("/api/voice/transcribe", upload.single("audio"), async (req: Request, r
       } else {
         responseText = "You have no urgent emails.";
       }
+    } else if (response.action === "read_emails") {
+      await hydrateEmailStore();
+      const filter = typeof response.metadata?.filter === "string" ? String(response.metadata.filter) : "recent";
+      const requestedCountRaw = response.metadata?.count;
+      const requestedCount = typeof requestedCountRaw === "number"
+        ? requestedCountRaw
+        : typeof requestedCountRaw === "string"
+          ? Number.parseInt(requestedCountRaw, 10)
+          : 1;
+      const safeRequestedCount = Number.isFinite(requestedCount) ? requestedCount : 1;
+      const count = Math.min(Math.max(safeRequestedCount, 1), 5);
+
+      let candidates = Array.from(emailStore.values()).sort(
+        (a, b) => new Date(b.email.receivedAt).getTime() - new Date(a.email.receivedAt).getTime(),
+      );
+
+      if (filter === "urgent") {
+        candidates = candidates.filter((item) => item.email.urgency === "urgent");
+      }
+
+      const selected = candidates.slice(0, count);
+
+      if (selected.length === 0) {
+        responseText = filter === "urgent"
+          ? "You have no important emails right now."
+          : "I couldn't find any emails to read just yet.";
+      } else {
+        const snippets = selected.map((output) => voiceService.formatEmailForSpeech(output));
+        responseText = snippets.join(" Next email. ");
+        response.metadata = {
+          ...(response.metadata ?? {}),
+          filter,
+          count: selected.length,
+          emails: selected.map((item) => ({
+            id: item.email.id,
+            subject: item.email.subject,
+            from: item.email.from,
+            receivedAt: item.email.receivedAt,
+            urgency: item.email.urgency,
+          })),
+        };
+      }
+    } else if (response.action === "compose_email") {
+      const recipientHint = typeof response.metadata?.recipientHint === "string" ? response.metadata.recipientHint : undefined;
+      const topicHint = typeof response.metadata?.topicHint === "string" ? response.metadata.topicHint : undefined;
+
+      const draft = await responseGenerator.generateDraftEmail({
+        recipientHint,
+        topicHint,
+        commandText: command.text,
+      });
+
+      draftStore.set(draft.id, draft);
+
+      const recipientLabel = draft.metadata.intendedRecipient ? ` to ${draft.metadata.intendedRecipient}` : "";
+      const topicLabel = draft.metadata.topic ? ` about ${draft.metadata.topic}` : "";
+      responseText = `I've drafted an email${recipientLabel}${topicLabel}. Review it when you're ready.`;
+      response.metadata = {
+        ...(response.metadata ?? {}),
+        draftId: draft.id,
+        draft,
+      };
     }
 
     let audioBase64: string | undefined;
@@ -274,7 +338,7 @@ async function hydrateEmailStore(options: { force?: boolean; markAsSeen?: boolea
       fetched: 0,
       processed: 0,
       skipped: 0,
-      mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : undefined,
+  mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : "sample",
       errors,
     };
   }
@@ -340,7 +404,7 @@ async function hydrateEmailStore(options: { force?: boolean; markAsSeen?: boolea
     fetched: 0,
     processed: 0,
     skipped: 0,
-    mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : undefined,
+  mailbox: emailSyncService.isImapConfigured() ? config.email.imapMailbox : "sample",
     errors,
   };
 }

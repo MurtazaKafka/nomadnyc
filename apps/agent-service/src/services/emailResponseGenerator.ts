@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { randomUUID } from "node:crypto";
 import type { EmailContent, PrioritizedEmail } from "../types";
 import { config } from "../config";
 
@@ -18,6 +19,20 @@ export interface GeneratedReply {
     generatedAt: string;
     tone: string;
     action: string;
+  };
+}
+
+export interface DraftEmail {
+  id: string;
+  subject: string;
+  body: string;
+  bodyHtml?: string;
+  metadata: {
+    createdAt: string;
+    tone: string;
+    intendedRecipient?: string;
+    topic?: string;
+    source: "voice-compose";
   };
 }
 
@@ -85,6 +100,81 @@ export class EmailResponseGenerator {
       emails.map(email => this.generateReply(email, commonOptions))
     );
     return replies;
+  }
+
+  async generateDraftEmail(input: {
+    recipientHint?: string;
+    topicHint?: string;
+    tone?: "formal" | "casual" | "friendly" | "professional";
+    commandText: string;
+  }): Promise<DraftEmail> {
+    const tone = input.tone ?? "professional";
+    const createdAt = new Date().toISOString();
+    const fallback = this.buildDraftFallback({ ...input, tone, createdAt });
+
+    if (!this.openai) {
+      return fallback;
+    }
+
+    const recipientLine = input.recipientHint
+      ? `The email should be addressed to ${input.recipientHint}.`
+      : "";
+    const topicLine = input.topicHint
+      ? `The email is about: ${input.topicHint}.`
+      : "";
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.6,
+        max_tokens: 400,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an efficient executive assistant drafting outbound emails. " +
+              "Write concise, actionable notes with a clear ask and next steps. Provide only the email body text.",
+          },
+          {
+            role: "user",
+            content: [
+              recipientLine,
+              topicLine,
+              `Voice command transcript: ${input.commandText}.`,
+              "Craft the email in a professional yet approachable tone.",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+          },
+        ],
+      });
+
+      const body = completion.choices[0]?.message?.content?.trim();
+      if (!body) {
+        return fallback;
+      }
+
+      const subject = this.titleCase(
+        input.topicHint ?? this.deriveSubjectFromBody(body) ?? "Draft email",
+      );
+
+      return {
+        id: randomUUID(),
+        subject,
+        body,
+        bodyHtml: this.convertToHtml(body),
+        metadata: {
+          createdAt,
+          tone,
+          intendedRecipient: input.recipientHint,
+          topic: input.topicHint,
+          source: "voice-compose",
+        },
+      };
+    } catch (error) {
+      console.error("Failed to generate outbound email draft:", error);
+      return fallback;
+    }
   }
 
   private buildFallbackReply(
@@ -206,6 +296,60 @@ Provide only the body text of the email.`;
       .split("\n\n")
       .map(paragraph => `<p>${paragraph.replace(/\n/g, "<br>")}</p>`)
       .join("\n");
+  }
+
+  private buildDraftFallback(input: {
+    recipientHint?: string;
+    topicHint?: string;
+    tone: string;
+    commandText: string;
+    createdAt: string;
+  }): DraftEmail {
+    const recipient = input.recipientHint ?? "there";
+    const subject = this.titleCase(input.topicHint ?? "Draft email");
+    const body = [
+      `Hi ${this.extractDisplayName(recipient)},`,
+      "",
+      input.topicHint
+        ? `I wanted to reach out regarding ${input.topicHint}.`
+        : "I wanted to follow up based on our recent conversation.",
+      "",
+      "Let me know your thoughts or if there's anything else you need.",
+      "",
+      "Best,",
+      "Nomad Assistant",
+    ].join("\n");
+
+    return {
+      id: randomUUID(),
+      subject,
+      body,
+      bodyHtml: this.convertToHtml(body),
+      metadata: {
+        createdAt: input.createdAt,
+        tone: input.tone,
+        intendedRecipient: input.recipientHint,
+        topic: input.topicHint,
+        source: "voice-compose",
+      },
+    };
+  }
+
+  private titleCase(text: string): string {
+    return text
+      .split(/[\s_-]+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  private deriveSubjectFromBody(body: string): string | null {
+    const firstLine = body.split("\n").find((line) => line.trim().length > 0);
+    if (!firstLine) {
+      return null;
+    }
+
+    const trimmed = firstLine.replace(/^[^a-zA-Z0-9]+/, "").trim();
+    return trimmed.length > 3 ? trimmed.slice(0, 60) : null;
   }
 
   async generateQuickResponses(email: EmailContent | PrioritizedEmail): Promise<string[]> {

@@ -103,40 +103,80 @@ export class VoiceService {
 
   async processVoiceCommand(command: VoiceCommand): Promise<VoiceResponse> {
     const lowerText = command.text.toLowerCase();
-    
+
+    const wantsRead = /\bread\b|\bmost recent\b|\bmost important\b/.test(lowerText) && lowerText.includes("email");
+    if (wantsRead) {
+      const urgentSignal = /\burgent\b|\bimportant\b|\bpriority\b/.test(lowerText);
+      const countMatch = lowerText.match(/(?:top|first|latest)\s*(\d+)/);
+      const count = countMatch ? Number.parseInt(countMatch[1], 10) : urgentSignal ? 3 : 1;
+      return {
+        text: urgentSignal
+          ? "Reading your most important emails."
+          : count > 1
+            ? `Reading your ${count} most recent emails.`
+            : "Reading your most recent email.",
+        action: "read_emails",
+        metadata: {
+          filter: urgentSignal ? "urgent" : "recent",
+          count,
+        },
+      };
+    }
+
+    const wantsWrite = /\bwrite\b|\bcompose\b|\bdraft\b/.test(lowerText) && lowerText.includes("email");
+    if (wantsWrite) {
+      const recipientMatch = lowerText.match(/(?:to|for)\s+([\w.-]+(?:\s+[\w.-]+)?)/);
+      const topicMatch = lowerText.match(/about\s+([^.!?]+)/);
+      return {
+        text: "Sure, I'll sketch a draft email for you.",
+        action: "compose_email",
+        metadata: {
+          recipientHint: recipientMatch?.[1]?.trim(),
+          topicHint: topicMatch?.[1]?.trim(),
+          originalText: command.text,
+        },
+      };
+    }
+
     if (lowerText.includes("urgent") || lowerText.includes("priority")) {
       return {
         text: "I'll fetch your urgent emails right away.",
         action: "fetch_urgent",
-        metadata: { filter: "urgent" }
+        metadata: { filter: "urgent" },
       };
-    } else if (lowerText.includes("summarize") || lowerText.includes("summary")) {
+    }
+
+    if (lowerText.includes("summarize") || lowerText.includes("summary")) {
       return {
         text: "I'll provide a summary of your recent emails.",
         action: "summarize_emails",
-        metadata: { count: 5 }
+        metadata: { count: 5 },
       };
-    } else if (lowerText.includes("reply") || lowerText.includes("respond")) {
+    }
+
+    if (lowerText.includes("reply") || lowerText.includes("respond")) {
       const match = lowerText.match(/(?:reply|respond) to (\w+)/);
       const recipient = match ? match[1] : null;
       return {
         text: recipient ? `I'll help you draft a reply to ${recipient}.` : "I'll help you draft a reply.",
         action: "draft_reply",
-        metadata: { recipient }
+        metadata: { recipient },
       };
-    } else if (lowerText.includes("schedule") || lowerText.includes("meeting")) {
+    }
+
+    if (lowerText.includes("schedule") || lowerText.includes("meeting")) {
       return {
         text: "I'll help you schedule that meeting.",
         action: "schedule_meeting",
-        metadata: {}
-      };
-    } else {
-      return {
-        text: "I can help you with your emails. You can ask me to read urgent emails, summarize threads, or draft replies.",
-        action: "help",
-        metadata: {}
+        metadata: {},
       };
     }
+
+    return {
+      text: "I can read your latest emails, draft new ones, summarize threads, or help with replies — just ask!",
+      action: "help",
+      metadata: {},
+    };
   }
 
   formatEmailForSpeech(emailOutput: EmailAgentOutput): string {
