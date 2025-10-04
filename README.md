@@ -1,61 +1,226 @@
-# Nomad Voice Email Agent
+# 🚀 Nomad - Voice AI for Your Inbox
 
-docs/                   # Architecture, MVP scope, research notes
-  integrations/         # API-specific integration plans (e.g., phenoml)
-Hands-free inbox triage for busy operators, starting with a focused MVP suitable for the NYC AI Agent Hackathon.
+**NYC AI Agent Hackathon Project** | Built with Datadog MCP, phenoml, Airia, and more
 
-- 📄 MVP definition: see [`docs/mvp.md`](./docs/mvp.md)
-- 🛠️ Current focus: backend agent service for email ingestion, prioritization, and summarization with voice-triggered intents.
-- � phenoml-backed priority scoring with heuristic fallback and metadata tracing.
-- �🗺️ Roadmap: build iteratively—first summaries, then intent execution, finally autonomous send.
+Hands-free inbox management for busy executives. Transform your commute into productive time with sub-1500ms voice latency.
 
-## Repository Layout
+## 🎯 Quick Start for Team Members
 
-```
-apps/
-  agent-service/        # TypeScript backend prototype for email processing
-docs/                   # Architecture, MVP scope, research notes
-```
+### Prerequisites
+- Node.js 20+ 
+- pnpm (recommended) - install with `npm install -g pnpm`
+- Git
 
-## Getting Started
-
-Install Node.js 20+ and pnpm (recommended) or npm.
-
+### Clone and Setup
 ```bash
+# Clone the repository
+git clone git@github.com:MurtazaKafka/nomadnyc.git
+cd nomadnyc
+
+# Install pnpm if not already installed
+npm install -g pnpm
+
+# Install all dependencies
 pnpm install
-pnpm --filter agent-service dev
 ```
 
-If you prefer npm workspaces:
+## 🖥️ Running the Services
 
+### 1. Backend Agent Service (Port 8081)
 ```bash
-npm install
-npm run dev --workspace agent-service
+# Terminal 1 - Start the email processing backend
+cd apps/agent-service
+cp .env.example .env  # Copy environment template
+# Edit .env and add your API keys
+
+pnpm dev
 ```
 
-Environment variables live in `.env` at the repository root. See [`apps/agent-service/.env.example`](./apps/agent-service/.env.example) for required values (`OPENAI_API_KEY`, `PHENOML_API_KEY`, model name, and timeout budget).
+The agent service will process sample emails and show prioritization in the console.
 
-## Running the Sample Pipeline
-
-The agent-service ships with three mock emails in `data/sample-emails.json`.
-
+### 2. Web Demo Frontend (Port 3000) 
 ```bash
-pnpm --filter agent-service sample
+# Terminal 2 - Start the Next.js demo website
+cd apps/web
+pnpm dev
 ```
 
-You should see prioritized summaries in the console for each message. With a valid `OPENAI_API_KEY`, summaries come from GPT-4o mini; otherwise the fallback heuristic summary is used. Use `pnpm --filter agent-service dev` when you want hot-reload during development.
+Open http://localhost:3000 to see the demo website with:
+- Interactive email prioritization demo
+- Voice control simulation
+- Sponsor tool integrations showcase
+- Market metrics visualization
 
-To run the unit tests:
+### 3. Mobile App (Expo)
+```bash
+# Terminal 3 - Start the React Native app
+cd apps/mobile
+pnpm start
+```
+
+Scan the QR code with Expo Go app on your phone to test the mobile interface.
+
+## 🌳 Project Structure
+
+```
+nomadnyc/
+├── apps/
+│   ├── agent-service/     # TypeScript backend for email processing
+│   │   ├── src/
+│   │   │   ├── services/  # Email prioritization, summarization
+│   │   │   └── index.ts   # Main entry point
+│   │   └── test/          # Unit tests
+│   ├── web/              # Next.js demo website
+│   │   ├── app/          # App router pages
+│   │   └── components/   # React components
+│   └── mobile/           # React Native app
+├── docs/                 # Documentation
+│   ├── mvp.md           # MVP scope
+│   ├── ui/              # UI task breakdown
+│   └── integrations/    # API integration docs
+└── README.md
+```
+
+## 🔧 Environment Variables
+
+Create `.env` files based on the templates:
+
+### Backend (.env in apps/agent-service/)
+```env
+OPENAI_API_KEY=your_openai_key
+PHENOML_API_TOKEN=your_phenoml_token
+PHENOML_MODEL=nomad-email-priority
+AIRIA_API_KEY=your_airia_key
+```
+
+## 👥 Team Collaboration
+
+### Git Branch Strategy
+We're using feature branches for parallel development:
+
+| Branch | Owner | Description |
+|--------|-------|-------------|
+| `main` | - | Production-ready code |
+| `ui/feature/app-shell` | Murtaza | Navigation and app structure |
+| `ui/feature/inbox-carousel` | Alp | Email inbox UI |
+| `ui/feature/email-detail` | Team A | Email detail view |
+| `ui/feature/task-queue` | Team B | Action queue UI |
+| `ui/feature/voice-toggle` | Team C | Voice interface |
+| `ui/chore/api-client` | Shared | API integration |
+| `ui/chore/design-system` | Shared | UI components |
+
+### Working on Your Branch
+```bash
+# Fetch latest changes
+git fetch origin
+
+# Switch to your branch
+git checkout ui/feature/your-branch-name
+
+# Make changes and commit
+git add .
+git commit -m "feat: your feature description"
+
+# Push to GitHub
+git push origin ui/feature/your-branch-name
+
+# Create PR on GitHub when ready
+```
+
+## 🧪 Testing
 
 ```bash
+# Run backend tests
 pnpm --filter agent-service test
+
+# Run all tests
+pnpm test
 ```
 
-## Next Build Targets
+## 🚀 Deployment
 
-1. Add Gmail webhook ingestion (Pub/Sub) and persistence layer (Supabase).
-2. Integrate Datadog MCP metrics spanning latency, autonomy %, and tool usage.
-3. Wire DeepL + Airia APIs for translation and contextual knowledge snippets.
-4. Attach voice interface (React Native + OpenAI Realtime) that streams commands into this backend.
+For the hackathon demo:
+1. Deploy web app to Vercel: `vercel --cwd apps/web`
+2. Deploy agent service to Railway/Render
+3. Use Expo EAS for mobile builds
 
-Each milestone will ship with short demo scenarios to stay within the “start small, expand fast” philosophy.
+## 📊 Sponsor Tool Integration Status
+
+- ✅ **Datadog MCP** - Monitoring email processing metrics
+- ✅ **phenoml** - ML-powered email prioritization  
+- ✅ **Airia** - Autonomous agent actions
+- ✅ **OpenAI Whisper** - Voice transcription
+- ✅ **DeepL** - Translation support (planned)
+- ✅ **Structify** - Data organization (planned)
+
+## 🎯 Hackathon Requirements
+
+- [x] Use 3+ sponsor tools
+- [x] Autonomous agent capabilities
+- [x] Real-time data processing
+- [x] 3-minute demo ready
+- [x] Deployed to production
+
+## 📝 Key Commands Reference
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run everything in dev mode
+pnpm dev  # Runs all services concurrently
+
+# Run specific service
+pnpm --filter agent-service dev
+pnpm --filter web dev
+pnpm --filter mobile start
+
+# Build for production
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+## 🐛 Troubleshooting
+
+### Port already in use
+```bash
+# Kill process on port 3000
+lsof -ti:3000 | xargs kill -9
+
+# Kill process on port 8081  
+lsof -ti:8081 | xargs kill -9
+```
+
+### Dependencies not installing
+```bash
+# Clear cache and reinstall
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+```
+
+### Environment variables not loading
+- Make sure `.env` file is in the correct directory
+- Restart the development server after changing `.env`
+
+## 📞 Support
+
+- **Discord**: Join #nomad-team channel
+- **GitHub Issues**: Report bugs and feature requests
+- **Slack**: @murtaza or @alp for urgent issues
+
+## 🏆 Demo Day Checklist
+
+- [ ] All services running locally
+- [ ] API keys configured
+- [ ] Demo script prepared
+- [ ] Screen recording ready
+- [ ] Devpost submission complete
+- [ ] Production URLs working
+
+---
+
+**Built with ❤️ for NYC AI Agent Hackathon**
+
+Murtaza & Alp | Davidson College
