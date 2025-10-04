@@ -16,6 +16,7 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [waveformData, setWaveformData] = useState<number[]>(Array(50).fill(0));
 
@@ -24,6 +25,8 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const stopTimeoutRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
 
   const getAgentUrl = useCallback(buildAgentUrl, []);
 
@@ -49,6 +52,56 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
       }
     };
   }, [isListening]);
+
+  useEffect(() => {
+    if (!audioUrl) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (isPlaying) {
+        setIsPlaying(false);
+      }
+      return;
+    }
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+
+    const handleError = () => {
+      setIsPlaying(false);
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+
+    audio.play().then(() => {
+      setIsPlaying(true);
+    }).catch((playError) => {
+      console.error('Failed to play synthesized audio', playError);
+      setIsPlaying(false);
+    });
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.pause();
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+      setIsPlaying(false);
+    };
+  }, [audioUrl, isPlaying, setIsPlaying]);
 
   const cleanupStream = useCallback(() => {
     if (stopTimeoutRef.current) {
@@ -92,10 +145,36 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
       const payload = await upstream.json();
       setTranscript(payload.command?.text ?? '(no speech detected)');
       setResponse(payload.response?.text ?? '');
+      const audioBase64: string | undefined = payload.response?.audioBase64;
+      const audioMime: string = payload.response?.audioContentType ?? 'audio/mpeg';
+
+      if (audioBase64) {
+        try {
+          const binaryString = window.atob(audioBase64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i += 1) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: audioMime });
+          if (audioObjectUrlRef.current) {
+            URL.revokeObjectURL(audioObjectUrlRef.current);
+          }
+          const objectUrl = URL.createObjectURL(blob);
+          audioObjectUrlRef.current = objectUrl;
+          setAudioUrl(objectUrl);
+        } catch (decodeError) {
+          console.error('Failed to decode audio response', decodeError);
+          setAudioUrl(null);
+        }
+      } else {
+        setAudioUrl(null);
+      }
       setError(null);
     } catch (err) {
       console.error('Unable to process voice command', err);
       setError('Unable to reach the voice agent. Ensure the agent service is running.');
+      setAudioUrl(null);
     } finally {
       audioChunksRef.current = [];
       cleanupStream();
@@ -162,6 +241,14 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
     return () => {
       stopRecording();
       cleanupStream();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (audioObjectUrlRef.current) {
+        URL.revokeObjectURL(audioObjectUrlRef.current);
+        audioObjectUrlRef.current = null;
+      }
     };
   }, [cleanupStream, stopRecording]);
 
@@ -251,6 +338,18 @@ export default function VoiceDemo({ isPlaying, setIsPlaying }: VoiceDemoProps) {
           <div className="border-l-2 border-white/20 pl-4">
             <p className="text-white text-lg font-mono">&lt; {response}</p>
           </div>
+        </div>
+      )}
+
+      {audioUrl && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs text-white/40 uppercase tracking-wider">Voice Playback</div>
+            {isPlaying && <div className="text-white/60 text-xs uppercase tracking-wider">Playing…</div>}
+          </div>
+          <audio controls src={audioUrl} className="w-full" onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)}>
+            Your browser does not support the audio element.
+          </audio>
         </div>
       )}
 

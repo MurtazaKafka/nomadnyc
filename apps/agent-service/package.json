@@ -16,8 +16,11 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "imapflow": "^1.0.198",
     "langchain": "^0.3.3",
+    "mailparser": "^3.7.4",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^7.0.6",
     "openai": "^4.59.0",
     "zod": "^3.23.8"
   },

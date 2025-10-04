@@ -52,7 +52,10 @@ export default function EmailDemo() {
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
-  const [generatedReply, setGeneratedReply] = useState<{subject: string; body: string} | null>(null);
+  const [generatedReply, setGeneratedReply] = useState<
+    { subject: string; body: string; delivery?: { delivered: boolean; messageId?: string; error?: string } }
+    | null
+  >(null);
 
   const getAgentUrl = useCallback((path: string) => buildAgentUrl(path), []);
 
@@ -125,7 +128,7 @@ export default function EmailDemo() {
       }
       
       const reply = await response.json();
-      setGeneratedReply({ subject: reply.subject, body: reply.body });
+  setGeneratedReply({ subject: reply.subject, body: reply.body, delivery: reply.delivery });
       setShowReplyModal(true);
     } catch (err) {
       console.error('Failed to generate reply:', err);
@@ -322,6 +325,16 @@ export default function EmailDemo() {
                         <div className="text-xs text-white/40 uppercase tracking-wider mb-1">Body</div>
                         <div className="text-white font-mono whitespace-pre-wrap">{generatedReply.body}</div>
                       </div>
+                      {generatedReply.delivery && (
+                        <div className="border border-white/10 px-4 py-3 text-xs text-white/60">
+                          {generatedReply.delivery.delivered
+                            ? 'Reply sent via email.'
+                            : `Email delivery failed${generatedReply.delivery.error ? `: ${generatedReply.delivery.error}` : '.'}`}
+                          {generatedReply.delivery.messageId && (
+                            <div className="text-white/30 mt-1">Message ID: {generatedReply.delivery.messageId}</div>
+                          )}
+                        </div>
+                      )}
                       <div className="flex gap-2">
                         <button 
                           onClick={() => {
